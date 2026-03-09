@@ -73,19 +73,15 @@ jobs:
             --output json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' > task-definition.json
 
       - name: Update task definition with new image
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ secrets.ECS_CONTAINER_NAME }}
-          image: ${{ secrets.ECR_REPOSITORY_URI }}:${{ github.sha }}
+        run: |
+          jq --arg name "${{ secrets.ECS_CONTAINER_NAME }}" \
+             --arg image "${{ secrets.ECR_REPOSITORY_URI }}:${{ github.sha }}" \
+             '(.containerDefinitions[] | select(.name == $name) | .image) = $image' \
+             task-definition.json > task-definition-updated.json
 
       - name: Register new task definition
         id: register-task-def
-        env:
-          TASK_DEF_JSON: ${{ steps.task-def.outputs.task-definition }}
         run: |
-          python3 -c "import os; open('task-definition-updated.json','w').write(os.environ['TASK_DEF_JSON'])"
           TASK_DEF_ARN=$(aws ecs register-task-definition \
             --cli-input-json file://task-definition-updated.json \
             --query 'taskDefinition.taskDefinitionArn' \
