@@ -112,6 +112,7 @@ jobs:
         run: |
           aws ecs wait services-stable \
             --cluster ${{ secrets.ECS_CLUSTER }} \
-            --services ${{ secrets.ECS_SERVICE }}
+            --services ${{ secrets.ECS_SERVICE }} \
+            --waiter-config '{"Delay":15,"MaxAttempts":80}'
 
 
