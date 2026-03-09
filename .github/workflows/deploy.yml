@@ -85,7 +85,7 @@ jobs:
         env:
           TASK_DEF_JSON: ${{ steps.task-def.outputs.task-definition }}
         run: |
-          echo "$TASK_DEF_JSON" > task-definition-updated.json
+          python3 -c "import os; open('task-definition-updated.json','w').write(os.environ['TASK_DEF_JSON'])"
           TASK_DEF_ARN=$(aws ecs register-task-definition \
             --cli-input-json file://task-definition-updated.json \
             --query 'taskDefinition.taskDefinitionArn' \
