@@ -15,6 +15,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * 모든 예외를 일관된 ErrorResponse 형식으로 응답하는 전역 예외 핸들러.
@@ -89,6 +90,22 @@ public class GlobalExceptionHandler {
         Instant.now(),
         "NOT_FOUND",
         e.getMessage() != null ? e.getMessage() : "리소스를 찾을 수 없습니다.",
+        Collections.emptyMap(),
+        e.getClass().getName(),
+        HttpStatus.NOT_FOUND.value()
+    );
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+  }
+
+  /**
+   * 존재하지 않는 경로 요청 시 404 반환 (봇 스캔 등). ERROR 로그를 남기지 않음.
+   */
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException e) {
+    ErrorResponse body = toErrorResponse(
+        Instant.now(),
+        "NOT_FOUND",
+        "리소스를 찾을 수 없습니다.",
         Collections.emptyMap(),
         e.getClass().getName(),
         HttpStatus.NOT_FOUND.value()
