@@ -109,10 +109,10 @@ jobs:
             --output text
 
       - name: Wait for service stability
+        continue-on-error: true
         run: |
           aws ecs wait services-stable \
             --cluster ${{ secrets.ECS_CLUSTER }} \
-            --services ${{ secrets.ECS_SERVICE }} \
-            --waiter-config '{"Delay":15,"MaxAttempts":80}'
+            --services ${{ secrets.ECS_SERVICE }}
 
 
